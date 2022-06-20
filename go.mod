@@ -1,4 +1,4 @@
-module go-utils/utils
+module github.com/jacyluo/utils
 
 go 1.18
 

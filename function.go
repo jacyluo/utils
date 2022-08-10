@@ -3,9 +3,11 @@ package utils
 import (
 	"bytes"
 	"crypto/md5"
+	"crypto/sha1"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 	"io/ioutil"
 	"math"
@@ -233,18 +235,6 @@ func AnalyzeToken(tokenStr *string, secret *string) (id int64, flag byte, err er
 	return
 }
 
-func FyMd5(sign string) (result string, err error) {
-	m := md5.New()
-	_, err = io.WriteString(m, sign)
-	if err != nil {
-		return
-	}
-	arr := m.Sum(nil) //已经输出，但是是编码
-	// 将编码转换为字符串
-	result = fmt.Sprintf("%x", arr)
-	return
-}
-
 // DownLoad
 // path 保存的文件路径，不含扩展名
 // url 图片网址
@@ -348,4 +338,72 @@ func From36to10(str string) (n float64) {
 		n += pos * math.Pow(36, float64(length-i-1))
 	}
 	return
+}
+
+// KeyInMap 模仿php的array_key_exists,判断是否存在map中
+func KeyInMap(key string, m map[string]interface{}) bool {
+	_, ok := m[key]
+	if ok {
+		return true
+	}
+	return false
+}
+
+// InArrayForString 模仿php的in_array,判断是否存在string数组中
+func InArrayForString(items []string, item string) bool {
+	for _, eachItem := range items {
+		if eachItem == item {
+			return true
+		}
+	}
+	return false
+}
+
+// InArrayForInt 模仿php的in_array,判断是否存在int数组中
+func InArrayForInt(items []int, item int) bool {
+	for _, eachItem := range items {
+		if eachItem == item {
+			return true
+		}
+	}
+	return false
+}
+
+// PasswordHash php的函数password_hash
+func PasswordHash(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
+}
+
+// PasswordVerify php的函数password_verify
+func PasswordVerify(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+// IntArrToStringArr int数组转string数组
+func IntArrToStringArr(arr []int) []string {
+	var stringArr []string
+	for _, v := range arr {
+		stringArr = append(stringArr, strconv.Itoa(v))
+	}
+	return stringArr
+}
+
+// GetMd5String 对字符串进行MD5哈希
+func GetMd5String(str string) (string, error) {
+	t := md5.New()
+	if _, err := io.WriteString(t, str); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", t.Sum(nil)), nil
+}
+
+// GetSha1String 对字符串进行SHA1哈希
+func GetSha1String(str string) (string, error) {
+	t := sha1.New()
+	if _, err := io.WriteString(t, str); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", t.Sum(nil)), nil
 }

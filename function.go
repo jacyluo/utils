@@ -14,6 +14,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
@@ -236,40 +237,56 @@ func AnalyzeToken(tokenStr *string, secret *string) (id int64, flag byte, err er
 }
 
 // DownLoad
-// path 保存的文件路径，不含扩展名
+// base 保存的文件路径，不含扩展名
 // url 图片网址
-func DownLoad(base string, url string) (fileEx string, err error) {
-	idx := strings.LastIndex(url, ".")
-	if idx < 0 {
-		fileEx = ".jpg"
-	} else {
-		ed := strings.LastIndex(url, "?")
-		if ed < 0 {
-			fileEx = url[idx:]
-		} else {
-			fileEx = url[idx:ed]
+// cover 是否覆盖
+func DownLoad(base string, url string, cover bool) error {
+	name := path.Base(url)
+	if !cover {
+		if _, err := os.Stat(base + name); err == nil {
+			return nil
 		}
 	}
-	base += fileEx
-	v, e := http.Get(url)
-	if e != nil {
-		err = e
-		fmt.Printf("Http get [%v] failed! %v", url, err)
-		return
+
+	v, err := http.Get(url)
+	if err != nil {
+		return err
 	}
 	defer v.Body.Close()
 	content, e := ioutil.ReadAll(v.Body)
 	if e != nil {
-		err = e
-		fmt.Printf("Read http response failed! %v", err)
-		return
+		return e
 	}
 	err = ioutil.WriteFile(base, content, 0666)
 	if err != nil {
-		fmt.Printf("Save to file failed! %v", err)
-		return
+		return err
 	}
-	return
+	return nil
+}
+
+//CreateMutiDir 调用os.MkdirAll递归创建文件夹
+func CreateMutiDir(filePath string) error {
+	if !IsExist(filePath) {
+		err := os.MkdirAll(filePath, os.ModePerm)
+		if err != nil {
+			fmt.Println("创建文件夹失败,error info:", err)
+			return err
+		}
+		return err
+	}
+	return nil
+}
+
+//IsExist 判断所给路径文件/文件夹是否存在(返回true是存在)
+func IsExist(path string) bool {
+	_, err := os.Stat(path) //os.Stat获取文件信息
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		return false
+	}
+	return true
 }
 
 func JSONMethod(content interface{}) map[string]interface{} {

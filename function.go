@@ -341,6 +341,9 @@ func From10to36(n int64) (val string) {
 		val = dict[ix:ix+1] + val
 		n = n / 36
 	}
+	if val == "" {
+		val = dict[0:1]
+	}
 	return
 }
 

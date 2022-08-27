@@ -10,8 +10,9 @@ type SqlRes struct {
 	AffectedNum int64
 }
 
-func Transaction(db *gorm.DB, arrSql []SqlRes) error {
+func Transaction(db *gorm.DB, ptr *[]SqlRes) error {
 	tx := db.Begin()
+	arrSql := *ptr
 	for i := 0; i < len(arrSql); i++ {
 		if result := tx.Exec(arrSql[i].Sql); result.Error != nil {
 			tx.Rollback()

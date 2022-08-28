@@ -10,6 +10,13 @@ type SqlRes struct {
 	AffectedNum int64
 }
 
+func AppendSql(arrSql *[]SqlRes, sql *string, num int64) {
+	*arrSql = append(*arrSql, SqlRes{
+		Sql:         *sql,
+		AffectedNum: num,
+	})
+}
+
 func Transaction(db *gorm.DB, ptr *[]SqlRes) error {
 	tx := db.Begin()
 	arrSql := *ptr

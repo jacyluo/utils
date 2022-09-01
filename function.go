@@ -427,3 +427,10 @@ func GetSha1String(str string) (string, error) {
 	}
 	return fmt.Sprintf("%x", t.Sum(nil)), nil
 }
+
+// Decimal 四舍五入 dec 保留精度
+func Decimal(value float64, dec int) float64 {
+	format := fmt.Sprintf("%%.%df", dec)
+	value, _ = strconv.ParseFloat(fmt.Sprintf(format, value), 64)
+	return value
+}

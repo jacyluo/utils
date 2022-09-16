@@ -436,7 +436,10 @@ func Decimal(value float64, dec int) float64 {
 }
 
 // Compare 比较两个结构体，返回不一致信息
-func Compare(original interface{}, target interface{}) (string, error) {
+func Compare(original interface{}, target interface{}, omitStr string) (string, error) {
+	omitStr = strings.Replace(omitStr, " ", "", -1)
+	omitStr = strings.Trim(omitStr, ",")
+	omit := strings.Split(omitStr, ",")
 	oriVal := reflect.ValueOf(original)
 	oriType := reflect.TypeOf(original)
 	if oriType.Kind() == reflect.Ptr {
@@ -461,6 +464,9 @@ func Compare(original interface{}, target interface{}) (string, error) {
 	for i := 0; i < num; i++ {
 		oriF := oriType.Field(i)
 		oriV := oriVal.Field(i).Interface()
+		if InArrayForString(omit, oriF.Name) {
+			continue
+		}
 		//oriK := oriVal.Field(i).Kind()
 		var find bool
 		for j := 0; j < num; j++ {

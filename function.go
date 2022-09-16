@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -432,4 +433,51 @@ func GetSha1String(str string) (string, error) {
 func Decimal(value float64, dec int) float64 {
 	n10 := math.Pow10(dec)
 	return math.Trunc((value+0.5/n10)*n10) / n10
+}
+
+// Compare 比较两个结构体，返回不一致信息
+func Compare(original interface{}, target interface{}) (string, error) {
+	oriVal := reflect.ValueOf(original)
+	oriType := reflect.TypeOf(original)
+	if oriType.Kind() == reflect.Ptr {
+		//用Elem()获得实际的value
+		oriVal = oriVal.Elem()
+		oriType = oriType.Elem()
+	}
+
+	tarVal := reflect.ValueOf(target)
+	tarType := reflect.TypeOf(target)
+	if tarType.Kind() == reflect.Ptr {
+		//用Elem()获得实际的value
+		tarVal = tarVal.Elem()
+		tarType = tarType.Elem()
+	}
+
+	num := oriVal.NumField()
+	if num != oriVal.NumField() {
+		return "", errors.New("类型不一致")
+	}
+	var result []string
+	for i := 0; i < num; i++ {
+		oriF := oriType.Field(i)
+		oriV := oriVal.Field(i).Interface()
+		//oriK := oriVal.Field(i).Kind()
+		var find bool
+		for j := 0; j < num; j++ {
+			tarF := tarType.Field(j)
+			tarV := tarVal.Field(j).Interface()
+			//tarK := oriVal.Field(j).Kind()
+			if oriF.Name == tarF.Name {
+				find = true
+				if oriV != tarV {
+					result = append(result, fmt.Sprintf("%v: %v ＝〉%v", oriF.Name, oriV, tarV))
+				}
+				break
+			}
+		}
+		if !find {
+			return "", errors.New("类型不一致")
+		}
+	}
+	return strings.Join(result, ";"), nil
 }

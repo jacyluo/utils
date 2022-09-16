@@ -442,6 +442,59 @@ func Compare(original interface{}, target interface{}, omitStr string) (string, 
 	omit := strings.Split(omitStr, ",")
 	oriVal := reflect.ValueOf(original)
 	oriType := reflect.TypeOf(original)
+	//fmt.Printf("oriType %v %v \n", oriType, oriType.String())
+	if oriType.Kind() == reflect.Ptr {
+		//用Elem()获得实际的value
+		oriVal = oriVal.Elem()
+		oriType = oriType.Elem()
+	}
+
+	tarVal := reflect.ValueOf(target)
+	tarType := reflect.TypeOf(target)
+	//fmt.Printf("tarType %v %v \n", tarType, tarType.String())
+	if tarType.Kind() == reflect.Ptr {
+		//用Elem()获得实际的value
+		tarVal = tarVal.Elem()
+		tarType = tarType.Elem()
+	}
+
+	if oriType != tarType {
+		return "", errors.New("类型不一致，不支付比较")
+	}
+
+	num := oriVal.NumField()
+	var result []string
+	for i := 0; i < num; i++ {
+		oriF := oriType.Field(i)
+		oriV := oriVal.Field(i).Interface()
+		if InArrayForString(omit, oriF.Name) {
+			continue
+		}
+		//oriK := oriVal.Field(i).Kind()
+		//fmt.Printf("tarK %v %v", oriK, oriK.String())
+		for j := 0; j < num; j++ {
+			tarF := tarType.Field(j)
+			tarV := tarVal.Field(j).Interface()
+			//tarK := oriVal.Field(j).Kind()
+			//fmt.Printf("tarK %v %v", tarK, tarK.String())
+			if oriF.Name == tarF.Name {
+				if oriV != tarV {
+					result = append(result, fmt.Sprintf("%v: %v ＝〉%v", oriF.Name, oriV, tarV))
+				}
+				break
+			}
+		}
+	}
+	return strings.Join(result, ";"), nil
+}
+
+// Changed 如果类型不一致，则判定为不同
+func Changed(original interface{}, target interface{}, omitStr string) (string, error) {
+	omitStr = strings.Replace(omitStr, " ", "", -1)
+	omitStr = strings.Trim(omitStr, ",")
+	omit := strings.Split(omitStr, ",")
+	oriVal := reflect.ValueOf(original)
+	oriType := reflect.TypeOf(original)
 	if oriType.Kind() == reflect.Ptr {
 		//用Elem()获得实际的value
 		oriVal = oriVal.Elem()
@@ -456,33 +509,34 @@ func Compare(original interface{}, target interface{}, omitStr string) (string, 
 		tarType = tarType.Elem()
 	}
 
-	num := oriVal.NumField()
-	if num != oriVal.NumField() {
-		return "", errors.New("类型不一致")
-	}
+	num := tarVal.NumField()
+	numOri := oriVal.NumField()
+
 	var result []string
 	for i := 0; i < num; i++ {
-		oriF := oriType.Field(i)
-		oriV := oriVal.Field(i).Interface()
-		if InArrayForString(omit, oriF.Name) {
+		tarF := tarType.Field(i)
+		tarV := tarVal.Field(i).Interface()
+		if InArrayForString(omit, tarF.Name) {
 			continue
 		}
-		//oriK := oriVal.Field(i).Kind()
+		//tarK := tarVal.Field(i).Kind()
+		//fmt.Printf("tarK %v %v", tarK, tarK.String())
 		var find bool
-		for j := 0; j < num; j++ {
-			tarF := tarType.Field(j)
-			tarV := tarVal.Field(j).Interface()
-			//tarK := oriVal.Field(j).Kind()
-			if oriF.Name == tarF.Name {
+		for j := 0; j < numOri; j++ {
+			oriF := oriType.Field(j)
+			oriV := oriVal.Field(j).Interface()
+			//oriK := tarVal.Field(j).Kind()
+			//fmt.Printf("oriK %v %v", oriK, oriK.String())
+			if tarF.Name == oriF.Name {
 				find = true
-				if oriV != tarV {
-					result = append(result, fmt.Sprintf("%v: %v ＝〉%v", oriF.Name, oriV, tarV))
+				if tarV != oriV {
+					result = append(result, fmt.Sprintf("%v: %v ＝〉%v", tarF.Name, oriV, tarV))
 				}
 				break
 			}
 		}
 		if !find {
-			return "", errors.New("类型不一致")
+			result = append(result, fmt.Sprintf("%v: %v ＝〉%v", tarF.Name, "nil", tarV))
 		}
 	}
 	return strings.Join(result, ";"), nil

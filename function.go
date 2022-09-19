@@ -350,15 +350,16 @@ func From10to36(n int64) (val string) {
 
 //From36to10
 //36进制转10进制
-func From36to10(str string) (n float64) {
+func From36to10(str string) int64 {
 	dict := "0RGJKD43SM8NL2AYBZQ7WX69ECH5U1VOIPFT"
 	length := len(str)
+	var n float64
 	for i := 0; i < length; i++ {
 		char := str[i : i+1]
 		pos := float64(strings.Index(dict, char))
 		n += pos * math.Pow(36, float64(length-i-1))
 	}
-	return
+	return int64(n)
 }
 
 // KeyInMap 模仿php的array_key_exists,判断是否存在map中

@@ -542,3 +542,25 @@ func Changed(original interface{}, target interface{}, omitStr string) (string, 
 	}
 	return strings.Join(result, ";"), nil
 }
+
+// Client 封装了 header 的 Client
+func Client(method string, url string, body []byte, headers map[string]string) ([]byte, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, strings.NewReader(string(body)))
+	if err != nil {
+		return nil, err
+	}
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if body, err = ioutil.ReadAll(resp.Body); err != nil {
+		return nil, err
+	} else {
+		return body, nil
+	}
+}

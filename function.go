@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/rand"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path"
@@ -543,7 +544,7 @@ func Changed(original interface{}, target interface{}, omitStr string) (string, 
 	return strings.Join(result, ";"), nil
 }
 
-// Client 封装了 header 的 Client
+// Client 封装了 header 的 Client,以 application/json 方式发送
 func Client(method string, url string, body []byte, headers map[string]string) ([]byte, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, strings.NewReader(string(body)))
@@ -559,6 +560,63 @@ func Client(method string, url string, body []byte, headers map[string]string) (
 	}
 	defer resp.Body.Close()
 	if body, err = ioutil.ReadAll(resp.Body); err != nil {
+		return nil, err
+	} else {
+		return body, nil
+	}
+}
+
+// CreateForm 生成表单，支持发送文件
+func CreateForm(form map[string]interface{}) (string, io.Reader, error) {
+	body := new(bytes.Buffer)
+	mp := multipart.NewWriter(body)
+	defer mp.Close()
+	for key, value := range form {
+		val := fmt.Sprintf("%v", value)
+		if strings.HasPrefix(val, "@") {
+			val = val[1:]
+			file, err := os.Open(val)
+			if err != nil {
+				return "", nil, err
+			}
+			defer file.Close()
+			part, err := mp.CreateFormFile(key, val)
+			if err != nil {
+				return "", nil, err
+			}
+			io.Copy(part, file)
+		} else {
+			mp.WriteField(key, val)
+		}
+	}
+	return mp.FormDataContentType(), body, nil
+}
+
+//PostForm 以 multipart/form-data 方式发送
+func PostForm(url string, form map[string]interface{}, headers map[string]string) ([]byte, error) {
+	ct, content, err := CreateForm(form)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", url, content)
+	if err != nil {
+		return nil, err
+	}
+
+	headers["Content-Type"] = ct
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
 		return nil, err
 	} else {
 		return body, nil

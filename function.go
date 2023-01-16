@@ -218,8 +218,8 @@ func AnalyzeToken(tokenStr *string, secret *string) (id int64, flag byte, err er
 		return
 	}
 
-	flag = ids[1:2][0]
-	symbol := []byte(ids[2:3])[0]
+	flag = ids[0:1][0]
+	symbol := []byte(ids[1:2])[0]
 
 	code = ids[5:]
 	ids = ""

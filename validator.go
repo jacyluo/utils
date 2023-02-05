@@ -16,6 +16,9 @@ func init() {
 	regEn()
 	regInt()
 	regFloat()
+	regUrl()
+	regDate()
+	regDatetime()
 }
 
 /**
@@ -53,7 +56,7 @@ func isIDCard(id string) bool {
 	}
 	if len(id) == 15 {
 		tm2, _ := time.Parse("01/02/2006", string([]byte(id)[8:10])+"/"+string([]byte(id)[10:12])+"/"+"19"+string([]byte(id)[6:8]))
-		if tm2.Unix() <= 0 || tm2.Unix() >= time.Now().Unix() {
+		if tm2.Unix() >= time.Now().Unix() {
 			return false
 		}
 		return true
@@ -314,6 +317,99 @@ func regFloat() {
 					}
 				}
 			}
+		}
+		return nil
+	})
+}
+
+/**
+检查是否为有效网址
+参数：
+value string
+*/
+func regUrl() {
+	vd.RegFunc("chkUrl", func(args ...interface{}) error {
+		var size int
+		size = len(args)
+		if size == 0 {
+			return errors.New("invalid parameter number")
+		}
+		s, ok := args[0].(string)
+		if !ok {
+			return errors.New("invalid parameter Url")
+		}
+		pattern := "^https?://[\\w\\-]+(\\.[\\w\\-]+)+([\\w\\-\\.,@?^=%&:/~\\+#]*[\\w\\-\\@?^=%&\\/~\\+#])?$"
+
+		urlRegexp := regexp.MustCompile(pattern)
+		if matched := urlRegexp.MatchString(s); matched {
+			return nil
+		}
+		return errors.New("invalid Url")
+	})
+}
+
+/**
+检查是否为有效日期格式
+参数：
+value string
+*/
+func regDate() {
+	vd.RegFunc("chkDate", func(args ...interface{}) error {
+		var size int
+		size = len(args)
+		if size == 0 {
+			return errors.New("invalid parameter number")
+		}
+		s, ok := args[0].(string)
+		if !ok {
+			return errors.New("invalid parameter date")
+		}
+		var format, split string
+		if strings.Index(s, "-") > 0 {
+			split = "-"
+		} else if strings.Index(s, "/") > 0 {
+			split = "/"
+		}
+		format = fmt.Sprintf("2006%s01%s02", split, split)
+		if _, ok := time.Parse(format, s); ok != nil {
+			return errors.New("invalid Date")
+		}
+		return nil
+	})
+}
+
+/**
+检查是否为有效时间
+参数：
+value string
+*/
+func regDatetime() {
+	vd.RegFunc("chkDatetime", func(args ...interface{}) error {
+		var size int
+		size = len(args)
+		if size == 0 {
+			return errors.New("invalid parameter number")
+		}
+		s, ok := args[0].(string)
+		if !ok {
+			return errors.New("invalid parameter datetime")
+		}
+		var format, split string
+		if strings.Index(s, "-") > 0 {
+			split = "-"
+		} else if strings.Index(s, "/") > 0 {
+			split = "/"
+		} else {
+			return errors.New("invalid Datetime")
+		}
+
+		format = fmt.Sprintf("2006%s01%s02 15:04", split, split)
+		arr := strings.Split(s, ":")
+		if len(arr) == 3 {
+			format += ":05"
+		}
+		if _, ok := time.Parse(format, s); ok != nil {
+			return errors.New("invalid Datetime")
 		}
 		return nil
 	})

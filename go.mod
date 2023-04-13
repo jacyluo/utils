@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/bytedance/go-tagexpr/v2 v2.9.3
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
-	gorm.io/gorm v1.23.8
+	gorm.io/gorm v1.21.11
 )
 
 require (

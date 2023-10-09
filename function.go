@@ -36,19 +36,19 @@ func GeneOrderNo23() (orderNo string) {
 	var n int
 	for {
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		n = r.Intn(1000000)
+		n = r.Intn(1000)
 		if n >= 100 {
 			break
 		}
 	}
 	str := strconv.Itoa(n)
-	for i := len(str); len(str) < 6; i++ {
+	for i := len(str); len(str) < 3; i++ {
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		n = r.Intn(10)
 		str = fmt.Sprintf("%s%d", str, n)
 	}
 
-	orderNo = fmt.Sprintf("%s%s%d", orderNo, second, n)
+	orderNo = fmt.Sprintf("%s%s%s", orderNo, second, str)
 	return
 }
 

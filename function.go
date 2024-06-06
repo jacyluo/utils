@@ -52,8 +52,8 @@ func GeneOrderNo23() (orderNo string) {
 	return
 }
 
-//GeneOrderNo
-//生成长度26位订单号
+// GeneOrderNo
+// 生成长度26位订单号
 func GeneOrderNo() (orderNo string) {
 	current := time.Now()
 	orderNo = time.Unix(current.Unix(), 0).Format("20060102150405")
@@ -266,7 +266,7 @@ func DownLoad(base string, url string, cover bool) error {
 	return nil
 }
 
-//CreateMutiDir 调用os.MkdirAll递归创建文件夹
+// CreateMutiDir 调用os.MkdirAll递归创建文件夹
 func CreateMutiDir(filePath string) error {
 	if !IsExist(filePath) {
 		err := os.MkdirAll(filePath, os.ModePerm)
@@ -279,7 +279,7 @@ func CreateMutiDir(filePath string) error {
 	return nil
 }
 
-//IsExist 判断所给路径文件/文件夹是否存在(返回true是存在)
+// IsExist 判断所给路径文件/文件夹是否存在(返回true是存在)
 func IsExist(path string) bool {
 	_, err := os.Stat(path) //os.Stat获取文件信息
 	if err != nil {
@@ -334,8 +334,8 @@ func BuildSignQueryStr(p map[string]interface{}) (returnStr string) {
 	return
 }
 
-//From10to36
-//10进制转36进制
+// From10to36
+// 10进制转36进制
 func From10to36(n int64) (val string) {
 	dict := "0RGJKD43SM8NL2AYBZQ7WX69ECH5U1VOIPFT"
 	for n > 0 {
@@ -349,8 +349,8 @@ func From10to36(n int64) (val string) {
 	return
 }
 
-//From36to10
-//36进制转10进制
+// From36to10
+// 36进制转10进制
 func From36to10(str string) int64 {
 	dict := "0RGJKD43SM8NL2AYBZQ7WX69ECH5U1VOIPFT"
 	length := len(str)
@@ -531,7 +531,7 @@ func Changed(original interface{}, target interface{}, omitStr string) (string, 
 			//fmt.Printf("oriK %v %v", oriK, oriK.String())
 			if tarF.Name == oriF.Name {
 				find = true
-				if tarV != oriV {
+				if fmt.Sprintf("%v", oriV) != fmt.Sprintf("%v", tarV) {
 					result = append(result, fmt.Sprintf("%v: %v ＝〉%v", tarF.Name, oriV, tarV))
 				}
 				break
@@ -592,7 +592,7 @@ func CreateForm(form map[string]interface{}) (string, io.Reader, error) {
 	return mp.FormDataContentType(), body, nil
 }
 
-//PostForm 以 multipart/form-data 方式发送
+// PostForm 以 multipart/form-data 方式发送
 func PostForm(url string, form map[string]interface{}, headers map[string]string) ([]byte, error) {
 	ct, content, err := CreateForm(form)
 	if err != nil {

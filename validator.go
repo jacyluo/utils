@@ -19,9 +19,11 @@ func init() {
 	regUrl()
 	regDate()
 	regDatetime()
+	regPhone()
 }
 
-/**
+/*
+*
 检查15、18位的身份证号是否有效
 验证省份、出生日期是否大于当前时间
 18检验效验码
@@ -105,13 +107,13 @@ func chkProv(id string) bool {
 	}
 }
 
-/**
+/*
+*
 检查是否为空，或全都是汉字，允许长度范围 [min,max]
 参数：
 str string
 minLen int
 maxLen int
-
 */
 func regCn() {
 	vd.RegFunc("chkCn", func(args ...interface{}) error {
@@ -158,7 +160,8 @@ func regCn() {
 	})
 }
 
-/**
+/*
+*
 检查是否为空，或全都是英文字符 允许长度范围[min,max]
 参数：
 str string
@@ -210,7 +213,8 @@ func regEn() {
 	})
 }
 
-/**
+/*
+*
 检查是否为有效整数 允许范围[min,max]
 参数：
 value int
@@ -263,7 +267,8 @@ func regInt() {
 	})
 }
 
-/**
+/*
+*
 检查是否为有效浮点数 允许范围[min,max]
 参数：
 value float64
@@ -322,7 +327,8 @@ func regFloat() {
 	})
 }
 
-/**
+/*
+*
 检查是否为有效网址
 参数：
 value string
@@ -348,7 +354,8 @@ func regUrl() {
 	})
 }
 
-/**
+/*
+*
 检查是否为有效日期格式
 参数：
 value string
@@ -378,7 +385,8 @@ func regDate() {
 	})
 }
 
-/**
+/*
+*
 检查是否为有效时间
 参数：
 value string
@@ -412,5 +420,32 @@ func regDatetime() {
 			return errors.New("invalid Datetime")
 		}
 		return nil
+	})
+}
+
+/*
+*
+检查是否为有效手机号
+参数：
+value string
+*/
+func regPhone() {
+	vd.RegFunc("chkPhone", func(args ...interface{}) error {
+		var size int
+		size = len(args)
+		if size != 1 {
+			return errors.New("invalid parameter number")
+		}
+		s, ok := args[0].(string)
+		if !ok {
+			return errors.New("invalid parameter phone")
+		}
+		pattern := "^1[3456789]\\d{9}$"
+
+		urlRegexp := regexp.MustCompile(pattern)
+		if matched := urlRegexp.MatchString(s); matched {
+			return nil
+		}
+		return errors.New("invalid phone")
 	})
 }
